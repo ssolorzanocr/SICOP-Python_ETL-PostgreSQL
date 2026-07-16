@@ -1,0 +1,138 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 INSTALACI\'d3N DE POSTGRESQL Y EJECUCI\'d3N DEL SCRIPT DE LA BASE DE DATOS\
+\
+=========================================================\
+1. Instalaci\'f3n de PostgreSQL\
+=========================================================\
+\
+1. Ingresar al sitio oficial de PostgreSQL:\
+\
+https://www.postgresql.org/download/\
+\
+2. Descargar la versi\'f3n correspondiente al sistema operativo.\
+\
+3. Durante la instalaci\'f3n asegurarse de instalar tambi\'e9n pgAdmin 4, ya que ser\'e1 la herramienta utilizada para administrar la base de datos.\
+\
+4. Durante el proceso de instalaci\'f3n se solicitar\'e1:\
+\
+- Usuario: postgres\
+- Contrase\'f1a: Definir una contrase\'f1a segura (ser\'e1 utilizada posteriormente para acceder al servidor,  GUARDARLA O QUE SEA DE RECORDAR FACIL).\
+- Puerto: dejar el valor por defecto (5432).\
+\
+5. Finalizar la instalaci\'f3n.\
+\
+=========================================================\
+2. Abrir pgAdmin\
+=========================================================\
+\
+1. Ejecutar pgAdmin 4.\
+\
+2. Si es la primera vez que se abre, solicitar\'e1 la contrase\'f1a maestra de pgAdmin. Esta contrase\'f1a \'fanicamente protege el acceso a la aplicaci\'f3n y no corresponde a la contrase\'f1a de PostgreSQL.\
+\
+3. Una vez abierto, en el panel izquierdo aparecer\'e1 el servidor PostgreSQL instalado.\
+\
+4. Si el servidor no aparece, registrar uno nuevo con los siguientes datos:\
+\
+- Nombre: Proyecto SICOP\
+- Host: localhost\
+- Puerto: 5432\
+- Usuario: postgres\
+- Contrase\'f1a: la definida durante la instalaci\'f3n.\
+\
+=========================================================\
+3. Crear la base de datos\
+=========================================================\
+\
+1. En el panel izquierdo expandir el servidor PostgreSQL.\
+\
+2. Expandir la carpeta "Databases".\
+\
+3. Hacer clic derecho sobre "Databases".\
+\
+4. Seleccionar:\
+\
+Create \uc0\u8594  Database...\
+\
+5. En el campo "Database" escribir:\
+\
+proyecto_sicop_v1\
+\
+6. Verificar que el propietario (Owner) sea:\
+\
+postgres\
+\
+7. Presionar el bot\'f3n "Save".\
+\
+La nueva base de datos aparecer\'e1 dentro de la carpeta "Databases".\
+\
+=========================================================\
+4. Abrir el editor SQL\
+=========================================================\
+\
+1. Seleccionar la base de datos:\
+\
+proyecto_sicop_v1\
+\
+2. Hacer clic derecho sobre ella.\
+\
+3. Seleccionar:\
+\
+Query Tool\
+\
+Se abrir\'e1 una nueva pesta\'f1a donde ser\'e1 posible ejecutar instrucciones SQL.\
+\
+=========================================================\
+5. Ejecutar el script de creaci\'f3n\
+=========================================================\
+\
+1. Abrir el archivo SQL suministrado con el proyecto.\
+\
+2. Copiar todo su contenido.\
+\
+3. Pegar el contenido dentro del Query Tool de pgAdmin.\
+\
+4. Verificar que las instrucciones CREATE DATABASE y \\connect permanezcan comentadas (si existen), ya que la base de datos ya fue creada previamente.\
+\
+5. Presionar el bot\'f3n "Execute" (\uc0\u9654 ) ubicado en la barra superior.\
+\
+6. Esperar a que finalice la ejecuci\'f3n.\
+\
+Si el proceso fue exitoso aparecer\'e1 un mensaje similar a:\
+\
+COMMIT\
+Query returned successfully\
+\
+=========================================================\
+6. Verificar la creaci\'f3n de las tablas\
+=========================================================\
+\
+En el panel izquierdo expandir la siguiente estructura:\
+\
+proyecto_sicop_v1\
+ \uc0\u9492 \u9472 \u9472  Schemas\
+      \uc0\u9492 \u9472 \u9472  public\
+           \uc0\u9492 \u9472 \u9472  Tables\
+\
+Dentro de la carpeta "Tables" deber\'e1n visualizarse las siguientes tablas:\
+\
+\'95 dim_proveedores\
+\'95 dim_instituciones\
+\'95 dim_catalogo_codigoidentificacion_producto\
+\'95 ofertas\
+\'95 lineas_ofertas\
+\'95 lineas_carteles\
+\'95 lineas_adjudicadas\
+\
+Si las tablas no aparecen inmediatamente, hacer clic derecho sobre "Schemas" o sobre "public" y seleccionar "Refresh".\
+\
+=========================================================\
+7. Finalizaci\'f3n\
+=========================================================\
+\
+Una vez verificadas las tablas, la base de datos se encuentra lista para cargar informaci\'f3n y ejecutar consultas.}
