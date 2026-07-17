@@ -31,7 +31,7 @@ La arquitectura sigue un enfoque de Pipeline ETL en etapas: ingestión, almacena
 
 7- Finalmente, se construyen las tablas de dimensiones y hechos del modelo analítico.
 
-# Instalación de PostgreSQL y Configuración de la Base de Datos
+# Guía para instalación de PostgreSQL y configuración de la base de datos
 
 Esta guía explica cómo instalar PostgreSQL, crear la base de datos del proyecto y ejecutar el script SQL para inicializar la estructura de la base de datos.
 
