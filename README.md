@@ -10,15 +10,25 @@ La arquitectura sigue un enfoque de Pipeline ETL en etapas: ingestión, almacena
 ## Flujo del proceso de ETL
 
 1- Inicialmente es necesario crear las tablas del modelo de datos y un conjunto de tablas "staging" que conservan el historial completo de las cargas obtenidos desde la fuente (incluyendo registros duplicados).
+
 2- Luego, se descarga un archivo ZIP correspondiente a un período mensual (YYYYMM) desde el portal de Observatorio de Compra Pública de Costa Rica.
+
 3- Se extraen archivos CSV contenidos en el ZIP. Únicamente se trabajan los archivos y columnas de interés definidas en la configuración para cada archivo CSV.
+
 4- Posteriormente, cada registro se carga a de las tablas staging recibe metadatos técnicos como: del proceso ETL que funcionan para:
+
     - etl_period: Periodo mensual de la descarga.
+    
     - source_file: Nombre del archivo csv desde donde se obtuvieron los registros.
+    
     - loaded_at: Fecha y hora del momento en que se cargaron los datos a las tablas staging.
+    
     - batch_id: Identificador único para cada proceso de carga.
+    
 5- Los datos se cargan directamente en PostgreSQL mediante COPY a las tablas staging (las cuales . Se limitó el tamaño de cada lote de filas a un máximo de 100,000 para evitar sobrecargar la memoria local.
+
 6- Mediante consultas SQL se eliminan duplicados conservando la versión más reciente de cada registro.
+
 7- Finalmente, se construyen las tablas de dimensiones y hechos del modelo analítico.
 
 # Instalación de PostgreSQL y Configuración de la Base de Datos
