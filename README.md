@@ -20,7 +20,7 @@ La arquitectura sigue un enfoque de Pipeline ETL en etapas: ingestión, almacena
 
 1- Inicialmente es necesario crear las tablas del modelo de datos y un conjunto de tablas "staging" que conservan el historial completo de las cargas obtenidos desde la fuente (incluyendo registros duplicados).
 
-2- Luego, se descarga un archivo ZIP correspondiente a un período mensual (YYYYMM) desde el portal de Observatorio de Compra Pública de Costa Rica.
+2- Luego, se descarga un archivo ZIP correspondiente a un período mensual desde el portal de Observatorio de Compra Pública de Costa Rica.
 
 3- Se extraen archivos CSV contenidos en el ZIP. Únicamente se trabajan los archivos y columnas de interés definidas en la configuración para cada archivo CSV.
 
