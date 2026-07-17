@@ -12,7 +12,7 @@ La arquitectura sigue un enfoque de Pipeline ETL en etapas: ingestión, almacena
 </p>
 
 <p align="center">
-    Pipeline ETL desarrollado para la plataforma SICOP Analytics.
+    Pipeline ETL desarrollado para el mínimo producto viable de la capa de persistencia para el proyecto del TFM.
 </p>
 
 
