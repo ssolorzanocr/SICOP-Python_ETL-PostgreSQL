@@ -8,7 +8,7 @@ La arquitectura sigue un enfoque de Pipeline ETL en etapas: ingestión, almacena
 <h2 align="center">Arquitectura General del Proyecto</h2>
 
 <p align="center">
-    <img src="docs/Arquitectura_simplificada.png" width="900">
+    <img src="docs/ArquitecturaMVP_simplificada.png" width="900">
 </p>
 
 <p align="center">
