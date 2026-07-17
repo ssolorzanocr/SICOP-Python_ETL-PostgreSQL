@@ -4,7 +4,16 @@ El proyecto descarga automáticamente archivos mensuales publicados por el Obser
 ## Arquitectura
 
 La arquitectura sigue un enfoque de Pipeline ETL en etapas: ingestión, almacenamiento temporal en tablas "staging" y construcción del modelo analítico.
-![Arquitectura del proyecto](docs/Arquitectura simplificada.png)
+
+<h2 align="center">Arquitectura General del Proyecto</h2>
+
+<p align="center">
+    <img src="docs/Arquitectura simplificada.png" width="900">
+</p>
+
+<p align="center">
+    Pipeline ETL desarrollado para la plataforma SICOP Analytics.
+</p>
 
 
 ## Flujo del proceso de ETL
