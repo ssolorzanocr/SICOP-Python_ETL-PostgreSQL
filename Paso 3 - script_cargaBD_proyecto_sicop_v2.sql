@@ -1,29 +1,4 @@
 -- ===================================================================
--- Consulta para ingresar los datos en la tabla de instituciones
-
-INSERT INTO dim_instituciones
-(
-    cedula_institucion,
-    nombre_institucion,
-    distrito,
-    canton,
-    provincia
-)
-
-SELECT DISTINCT ON (cedula)
-    cedula,
-    nombre_institucion,
-    NULLIF(TRIM(split_part(zona_geo_inst, ',', 1)), '') AS distrito,
-    NULLIF(TRIM(split_part(zona_geo_inst, ',', 2)), '') AS canton,
-    NULLIF(TRIM(split_part(zona_geo_inst, ',', 3)), '') AS provincia
-
-FROM staging.stg_instituciones
-
-ORDER BY
-    cedula,
-    loaded_at DESC;
-
--- ===================================================================
 -- Consulta para ingresar los datos en la tabla de proveedores
 INSERT INTO dim_proveedores
 (
@@ -50,6 +25,192 @@ FROM staging.stg_proveedores
 ORDER BY
     stg_proveedores.cedula_proveedor,
     stg_proveedores.loaded_at DESC;
+
+-- ===================================================================
+-- Consulta para ingresar los datos en la tabla de instituciones
+
+INSERT INTO dim_instituciones
+(
+    cedula_institucion,
+    nombre_institucion,
+    distrito,
+    canton,
+    provincia
+)
+
+SELECT DISTINCT ON (cedula)
+    cedula,
+    nombre_institucion,
+    NULLIF(TRIM(split_part(zona_geo_inst, ',', 1)), '') AS distrito,
+    NULLIF(TRIM(split_part(zona_geo_inst, ',', 2)), '') AS canton,
+    NULLIF(TRIM(split_part(zona_geo_inst, ',', 3)), '') AS provincia
+
+FROM staging.stg_instituciones
+
+ORDER BY
+    cedula,
+    loaded_at DESC;
+
+-- ============================================================
+--  Consulta para la carga de dim_catalogo_codigo_identificacion_producto
+--    Reconstruye el catálogo completo directamente desde el staging
+--    ya cargado por el Paso 2 — no requiere archivos adicionales.
+--
+--  ESTRUCTURA DEL CÓDIGO DE PRODUCTO (16 dígitos, basado en UNSPSC):
+--    Dígitos 1-2  → Segmento
+--    Dígitos 1-4  → Familia
+--    Dígitos 1-6  → Clase
+--    Dígitos 1-8  → Mercancía
+--    Dígitos 9-16 → ID interno SICOP del producto
+--    - nombre_segmento proviene de un lookup embebido (57 segmentos
+--      UNSPSC.
+--    - nombre_familia y nombre_clase quedan NULL: ya que SICOP no publica
+--      esos nombres en los CSV del observatorio.
+--    - nombre_mercancia = descripción más frecuente entre los
+--      productos que comparten el mismo artículo de 8 dígitos.
+
+INSERT INTO dim_catalogo_codigo_identificacion_producto (
+    cod_producto,
+    descripcion_producto,
+    segmento,
+    nombre_segmento,
+    familia,
+    clases,
+    mercancias,
+    nombre_mercancia
+)
+WITH codigos_crudos AS (
+    -- Unión de todas las fuentes de código de producto en staging.
+    SELECT SUBSTRING(TRIM(codigo_identificacion), 1, 16) AS cod_producto,
+           TRIM(desc_linea)                              AS descr
+    FROM   staging.stg_lineas_carteles
+
+    UNION ALL
+
+    SELECT SUBSTRING(TRIM(codigo_producto_cl), 1, 16), NULL
+    FROM   staging.stg_lineas_ofertadas
+
+    UNION ALL
+
+    SELECT SUBSTRING(TRIM(codigo_producto), 1, 16), NULL
+    FROM   staging.stg_lineas_adjudicadas
+
+    UNION ALL
+
+    SELECT SUBSTRING(TRIM(prod_id), 1, 16), NULL
+    FROM   staging.stg_procedimientos_adjudicacion
+),
+limpio AS (
+    -- Solo códigos válidos de exactamente 16 dígitos
+    SELECT cod_producto, NULLIF(descr, '') AS descr
+    FROM   codigos_crudos
+    WHERE  cod_producto ~ '^[0-9]{16}$'
+),
+codigos AS (
+    SELECT DISTINCT cod_producto
+    FROM   limpio
+),
+conteo AS (
+    -- Frecuencia de cada descripción por código
+    SELECT cod_producto, descr, COUNT(*) AS n
+    FROM   limpio
+    WHERE  descr IS NOT NULL
+    GROUP  BY cod_producto, descr
+),
+moda_producto AS (
+    -- Descripción más frecuente por código de 16 dígitos
+    -- (empate → orden alfabético, resultado determinístico)
+    SELECT cod_producto,
+           descr AS descripcion_producto,
+           ROW_NUMBER() OVER (PARTITION BY cod_producto
+                              ORDER BY n DESC, descr) AS rk
+    FROM   conteo
+),
+moda_mercancia AS (
+    -- Descripción más frecuente por mercancía (prefijo de 8 dígitos)
+    SELECT SUBSTRING(cod_producto, 1, 8) AS cod_mercancia,
+           descr AS nombre_mercancia,
+           ROW_NUMBER() OVER (PARTITION BY SUBSTRING(cod_producto, 1, 8)
+                              ORDER BY SUM(n) DESC, descr) AS rk
+    FROM   conteo
+    GROUP  BY SUBSTRING(cod_producto, 1, 8), descr
+),
+segmentos (segmento, nombre_segmento) AS (
+    VALUES
+    (10, 'Animales vivos, accesorios y suministros'),
+    (11, 'Material mineral, textil y vegetal'),
+    (12, 'Productos químicos incluyendo bioquímicos'),
+    (13, 'Resinas, caucho y espuma'),
+    (14, 'Papel, materiales de oficina y artículos de arte'),
+    (15, 'Combustibles, lubricantes y aceites'),
+    (20, 'Equipos de minería y cantería'),
+    (21, 'Equipos de granja y jardín y silvicultura'),
+    (22, 'Equipos de construcción y mantenimiento'),
+    (23, 'Maquinaria industrial y equipos de manufactura'),
+    (24, 'Materiales y accesorios de manejo de materiales'),
+    (25, 'Vehículos comerciales, militares y de uso personal'),
+    (26, 'Componentes y suministros de potencia generación y transmisión'),
+    (27, 'Herramientas y maquinaria general'),
+    (30, 'Estructuras, edificaciones, fabricaciones y acondicionamiento de espacios'),
+    (31, 'Materiales de manufactura y procesamiento'),
+    (32, 'Componentes electrónicos'),
+    (39, 'Iluminación, distribución eléctrica y accesorios'),
+    (40, 'Equipos de distribución y condicionamiento de fluidos'),
+    (41, 'Instrumentos de laboratorio, medición y observación'),
+    (42, 'Equipo médico, accesorios e insumos'),
+    (43, 'Tecnología de información, telecomunicaciones y radiodifusión'),
+    (44, 'Suministros de oficina, accesorios y consumibles'),
+    (45, 'Imprenta, equipos fotográficos y audiovisuales'),
+    (46, 'Seguridad, protección y defensa'),
+    (47, 'Limpieza y mantenimiento de instalaciones y productos'),
+    (48, 'Equipos y suministros industriales'),
+    (49, 'Deportes, recreación, entretenimiento y educación'),
+    (50, 'Productos alimenticios, bebidas y tabaco'),
+    (51, 'Medicamentos y productos farmacéuticos'),
+    (52, 'Ropa, calzado y accesorios de uso personal'),
+    (53, 'Artículos domésticos, personales y de consumo'),
+    (54, 'Artículos de uso público y eventos'),
+    (55, 'Publicaciones, grabaciones y medios de información'),
+    (56, 'Mobiliario y decoración'),
+    (60, 'Instrumentos musicales, artes y manualidades'),
+    (64, 'Artículos de colección y bellas artes'),
+    (70, 'Servicios de agricultura, pesca, silvicultura y caza'),
+    (71, 'Servicios de minería y petróleo y gas'),
+    (72, 'Servicios de construcción y mantenimiento de edificios'),
+    (73, 'Servicios de manufactura industrial'),
+    (76, 'Servicios de limpieza industrial'),
+    (77, 'Servicios medioambientales'),
+    (78, 'Servicios de transporte, almacenamiento y correo'),
+    (80, 'Servicios profesionales de gestión y administración'),
+    (81, 'Servicios de ingeniería, investigación y tecnología'),
+    (82, 'Servicios editoriales y gráficos'),
+    (83, 'Servicios de salud pública'),
+    (84, 'Servicios financieros y de seguros'),
+    (85, 'Servicios de salud y asistencia social'),
+    (86, 'Servicios de educación y formación'),
+    (90, 'Servicios de viaje, alimentación y alojamiento'),
+    (91, 'Servicios personales y domésticos'),
+    (92, 'Defensa, orden público y seguridad'),
+    (93, 'Servicios políticos y de asuntos cívicos'),
+    (94, 'Organizaciones, asociaciones y afiliaciones'),
+    (95, 'Tierras, edificios, estructuras y vías')
+)
+SELECT c.cod_producto::BIGINT                          AS cod_producto,
+       -- LEFT(...): respeta los límites VARCHAR(500)/VARCHAR(255)
+       -- del DDL del Paso 1 (algunas desc_linea son más largas)
+       LEFT(mp.descripcion_producto, 500)              AS descripcion_producto,
+       SUBSTRING(c.cod_producto, 1, 2)::INTEGER        AS segmento,
+       s.nombre_segmento,
+       SUBSTRING(c.cod_producto, 1, 4)::INTEGER        AS familia,
+       SUBSTRING(c.cod_producto, 1, 6)::INTEGER        AS clases,
+       SUBSTRING(c.cod_producto, 1, 8)::INTEGER        AS mercancias,
+       LEFT(mm.nombre_mercancia, 255)                  AS nombre_mercancia
+FROM   codigos c
+LEFT JOIN moda_producto  mp ON mp.cod_producto  = c.cod_producto
+                           AND mp.rk = 1
+LEFT JOIN moda_mercancia mm ON mm.cod_mercancia = SUBSTRING(c.cod_producto, 1, 8)
+                           AND mm.rk = 1
+LEFT JOIN segmentos      s  ON s.segmento = SUBSTRING(c.cod_producto, 1, 2)::INTEGER;
 
 
 -- ===================================================================
