@@ -24,13 +24,13 @@ La arquitectura sigue un enfoque de Pipeline ETL en etapas: ingestión, almacena
 
 ## Flujo del proceso de ETL
 
-1- Inicialmente es necesario crear las tablas del modelo de datos y un conjunto de tablas "staging" que conservan el historial completo de las cargas obtenidos desde la fuente (incluyendo registros duplicados).
+1- Inicialmente es necesario crear las tablas del modelo de datos y un conjunto de tablas "staging" (que conservan el historial completo de las cargas obtenidos desde la fuente, incluyendo registros duplicados).
 
-2- Luego, se descarga un archivo ZIP correspondiente a un período mensual desde el portal de Observatorio de Compra Pública de Costa Rica.
+2- Luego, se descargan un conjunto de archivos ZIP desde el portal del Observatorio de Compra Pública de Costa Rica, los cuales contienen datos correspondientes a períodos mensuales de año determinado.
 
-3- Se extraen archivos CSV contenidos en el ZIP. Únicamente se trabajan los archivos y columnas de interés definidas en la configuración para cada archivo CSV.
+3- Se extraen archivos CSV contenidos en los ZIP. Únicamente se trabajan los archivos y columnas de interés definidas en la configuración para cada archivo CSV.
 
-4- Posteriormente, cada registro se carga a de las tablas staging recibe metadatos técnicos como: del proceso ETL que funcionan para:
+4- Posteriormente, cada registro se carga a de las tablas staging. Cada fila recibe metadatos técnicos como:
 
     - etl_period: Periodo mensual de la descarga.
     
@@ -40,11 +40,12 @@ La arquitectura sigue un enfoque de Pipeline ETL en etapas: ingestión, almacena
     
     - batch_id: Identificador único para cada proceso de carga.
     
-5- Los datos se cargan directamente en PostgreSQL mediante COPY a las tablas staging (las cuales . Se limitó el tamaño de cada lote de filas a un máximo de 100,000 para evitar sobrecargar la memoria local.
+5- Los datos se cargan directamente en PostgreSQL mediante COPY a las tablas staging. Se limitó el tamaño de cada lote de filas a un máximo de 100,000 para evitar sobrecargar la memoria local.
 
 6- Mediante consultas SQL se eliminan duplicados conservando la versión más reciente de cada registro.
 
-7- Finalmente, se construyen las tablas de dimensiones y hechos del modelo analítico.
+7- Finalmente, se construyen las tablas de dimensiones y tablas de hechos del modelo analítico.
+
 
 # Guía para instalación de PostgreSQL y configuración de la base de datos
 
@@ -58,7 +59,12 @@ Antes de comenzar asegúrese de contar con:
 
 - Windows, Linux o macOS.
 - Permisos para instalar software.
-- Descargar el jupiter notebook y los archivos SQL suministrado con el proyecto.
+- Descargar el jupiter notebook y los archivos SQL suministrados con el proyecto (4 archivos en total):
+
+  1) Paso 1 - script_creacion_tablas_proyecto_sicop_v2.sql
+  2) Paso 2 - Código para generar base de datos stagin v2.ipynb
+  3) Paso 3 - script_cargaBD_proyecto_sicop_v2.sql
+  4) Consultas representativas.sql
 
 ---
 
@@ -201,7 +207,7 @@ Deben aparecer las siguientes tablas:
 
 - `dim_proveedores`
 - `dim_instituciones`
-- `dim_catalogo_codigoidentificacion_producto`
+- `dim_catalogo_codigo_identificacion_producto`
 - `lineas_ofertas`
 - `lineas_carteles`
 - `lineas_adjudicadas`
@@ -218,7 +224,7 @@ Para este paso será necesario tener una conexión a internet.
 
 2. Instalar todas la librerías de python mencionadas en la primera sección del código. 
 
-3. Buscar la sección de configuración general, ubicada en la segunda sección de código python, y ingresa la contraseña de PostgreSQL definida durante la instalación.
+3. Buscar la sección de configuración general, ubicada en la segunda sección de código python, y ingresa la contraseña de PostgreSQL definida durante la instalación y la cantidad de meses a descargar (se descargan los últimos 7 meses por defecto).
 
 4. Dar click en la opción "Run All".
 
@@ -240,7 +246,7 @@ proyecto_sicop_v1
 Query Tool
 ```
 
-Se abrirá una nueva pestaña donde podrá ejecutarse el segundo script SQL.
+Se abrirá una nueva pestaña donde podrá ejecutarse el segundo script SQL. Este script será el encargado de transformar los datos de las tablas staging para popular las tablas finales del modelo.
 
 2. Abrir el archivo SQL del proyecto llamado: "Paso 3 - script_cargaBD_proyecto_sicop_v2".
 
