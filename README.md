@@ -1,6 +1,12 @@
 # SICOP-Python_ETL-PostgreSQL
 El proyecto descarga automáticamente archivos mensuales publicados por el Observatorio de Compra Publica de Costa Rica, procesa grandes volúmenes de datos mediante una arquitectura de Streaming ETL, la almacena en un área de staging y construye un modelo dimensional optimizado para análisis de datos e inteligencia de negocios en PostgreSQL.
 
+<h2 align="center">Modelo de datos implementado</h2>
+
+<p align="center">
+    <img src="docs/Digrama base de datos v2.png" width="900">
+</p>
+
 ## Arquitectura
 
 La arquitectura sigue un enfoque de Pipeline ETL en etapas: ingestión, almacenamiento temporal en tablas "staging" y construcción del modelo analítico.
@@ -236,7 +242,7 @@ Query Tool
 
 Se abrirá una nueva pestaña donde podrá ejecutarse el segundo script SQL.
 
-2. Abror el archivo SQL del proyecto llamado: "Paso 3 - script_cargaBD_proyecto_sicop_v2".
+2. Abrir el archivo SQL del proyecto llamado: "Paso 3 - script_cargaBD_proyecto_sicop_v2".
 
 3. Presionar el botón **Execute (▶)**.
 
@@ -246,9 +252,7 @@ Se abrirá una nueva pestaña donde podrá ejecutarse el segundo script SQL.
 
 # Finalización
 
-Una vez cargados los datos en las tablas del modelo, la base de datos estará lista para:
-- Realizar consultas SQL.
-- Construir otros modelos analíticos.
+Una vez cargados los datos en las tablas del modelo, la base de datos estará lista para realizar las consultas SQL presentes en el archivo llamado "Consultas representativas". En este archivo se encuentran 4 consultas asociadas a futuras funcionalidades y casos de uso de la aplicación por desarrollar en etapas futuras.
 
 ---
 
@@ -259,7 +263,7 @@ proyecto_sicop_v1
 │
 ├── dim_proveedores
 ├── dim_instituciones
-├── dim_catalogo_codigoidentificacion_producto
+├── dim_catalogo_codigo_identificacion_producto
 ├── lineas_ofertas
 ├── lineas_carteles
 └── lineas_adjudicadas
