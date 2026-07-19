@@ -205,9 +205,7 @@ CREATE TABLE dim_catalogo_codigo_identificacion_producto (
     segmento              INTEGER,
     nombre_segmento       VARCHAR(255),
     familia               INTEGER,
-    nombre_familia        VARCHAR(255),
     clases                INTEGER,
-    nombre_clase          VARCHAR(255),
     mercancias            INTEGER,
     nombre_mercancia      VARCHAR(255)
 );
@@ -248,7 +246,7 @@ CREATE TABLE lineas_carteles (
 
     CONSTRAINT uq_lineas_carteles_compuesto
         UNIQUE (nro_sicop_nro_linea),
-/*
+
     CONSTRAINT fk_lineas_carteles_producto
         FOREIGN KEY (cod_producto)
         REFERENCES dim_catalogo_codigo_identificacion_producto (cod_producto)
@@ -260,7 +258,7 @@ CREATE TABLE lineas_carteles (
         REFERENCES dim_instituciones (cedula_institucion)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
-*/
+
     CONSTRAINT ck_lineas_carteles_cantidad
         CHECK (cantidad IS NULL OR cantidad >= 0),
 
@@ -304,16 +302,10 @@ CREATE TABLE lineas_ofertas (
 
     CONSTRAINT uq_lineas_ofertas_compuesto
         UNIQUE (nro_oferta_nro_linea),
-/*
+
     CONSTRAINT fk_lineas_ofertas_proveedor
         FOREIGN KEY (cedula_proveedor)
         REFERENCES dim_proveedores (cedula_proveedor)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT,
-
-    CONSTRAINT fk_lineas_ofertas_cartel
-        FOREIGN KEY (nro_sicop, nro_linea)
-        REFERENCES lineas_carteles (nro_sicop, nro_linea)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
 
@@ -322,7 +314,7 @@ CREATE TABLE lineas_ofertas (
         REFERENCES dim_catalogo_codigo_identificacion_producto (cod_producto)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
-*/
+
     CONSTRAINT ck_lineas_ofertas_cantidad
         CHECK (cantidad_ofertada IS NULL OR cantidad_ofertada >= 0),
 
@@ -357,16 +349,10 @@ CREATE TABLE lineas_adjudicadas (
 
     CONSTRAINT pk_lineas_adjudicadas
         PRIMARY KEY (nro_sicop, nro_oferta, nro_linea),
-/*
-    CONSTRAINT fk_lineas_adjudicadas_linea_oferta
-        --FOREIGN KEY (nro_sicop, nro_oferta, nro_linea)
-        --REFERENCES lineas_ofertas (nro_sicop, nro_oferta, nro_linea)
-        --ON UPDATE CASCADE
-        --ON DELETE RESTRICT,
 
-    CONSTRAINT fk_lineas_adjudicadas_cartel
-        FOREIGN KEY (nro_sicop, nro_linea)
-        REFERENCES lineas_carteles (nro_sicop, nro_linea)
+    CONSTRAINT fk_lineas_adjudicadas_linea_oferta
+        FOREIGN KEY (nro_sicop, nro_oferta, nro_linea)
+        REFERENCES lineas_ofertas (nro_sicop, nro_oferta, nro_linea)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
 
@@ -387,7 +373,7 @@ CREATE TABLE lineas_adjudicadas (
         REFERENCES dim_catalogo_codigo_identificacion_producto (cod_producto)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
-*/
+
     CONSTRAINT ck_lineas_adjudicadas_cantidad
         CHECK (cantidad_adjudicada IS NULL OR cantidad_adjudicada >= 0),
 
