@@ -1,0 +1,76 @@
+GUÍA RÁPIDA PARA EJECUTAR STREAMLIT 
+
+1. Descargar o actualizar el proyecto desde Git.
+
+2. Abrir Visual Studio Code en la carpeta raíz del proyecto.
+
+3. Abrir una terminal en VS Code.
+
+4. Crear un entorno virtual:
+
+python -m venv .venv
+
+5. Activar el entorno virtual:
+
+.\.venv\Scripts\Activate.ps1
+
+Si se activó correctamente, la terminal debería mostrar algo parecido a:
+
+(.venv) PS C:\ruta\del\proyecto>
+
+6. Instalar las librerías necesarias del proyecto:
+
+python -m pip install -r requirements.txt
+
+Esto instalará automáticamente:
+
+- Streamlit
+- pandas
+- psycopg2-binary
+- Altair
+
+7. Crear dentro del proyecto una carpeta llamada:
+
+.streamlit
+
+8. Dentro de esa carpeta crear un archivo llamado:
+
+secrets.toml
+
+9. Agregar dentro de secrets.toml los datos de conexión a PostgreSQL:
+
+[postgres]
+host = "localhost"
+port = "5432"
+database = "proyecto_sicop_v1"
+user = "postgres"
+password = "SU_CONTRASEÑA"
+
+Cada persona debe colocar la contraseña de PostgreSQL configurada en su propia computadora.
+
+IMPORTANTE:
+El archivo secrets.toml no debe subirse a Git, ya que contiene credenciales de acceso a la base de datos.
+
+10. Verificar que PostgreSQL esté iniciado y que la base de datos proyecto_sicop_v1 haya sido creada y cargada correctamente.
+
+11. Ejecutar Streamlit desde la raíz del proyecto:
+
+python -m streamlit run app.py
+
+12. La aplicación debería abrirse automáticamente en el navegador.
+
+Si no se abre, ingresar manualmente a:
+
+http://localhost:8501
+
+13. Para detenerlo, se detiene con la tecla control+C
+
+NOTAS:
+- El entorno virtual (`.venv`) se utiliza para mantener las librerías de este proyecto separadas de otros proyectos de Python. 
+Esto ayuda a evitar conflictos de versiones y permite que todos los integrantes instalen las mismas dependencias usando `requirements.txt`.
+- Cada integrante debe instalar las dependencias en su propia computadora.
+- La carpeta .venv no se comparte por Git. (es donde se aloja el entorno virtual sólo para el proyecto)
+- El código de Streamlit sí se comparte por Git mediante archivos como app.py.
+- requirements.txt contiene la lista de dependencias necesarias para que todos utilicen las mismas librerías. En el caso de que
+haya que agregar más, se agregarían ahí para despues nada más jalar cambios e instalar (o reinstalar).
+- .streamlit/secrets.toml es local y no debe subirse al repositorio. (tiene las credenciales de la BD local)
