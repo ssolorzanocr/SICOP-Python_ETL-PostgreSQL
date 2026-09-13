@@ -25,6 +25,10 @@ RAIZ = Path(__file__).resolve().parent.parent
 SECRETS = RAIZ / ".streamlit" / "secrets.toml"
 APP = RAIZ / "app.py"
 
+# Los nombres de segmento e institución traen acentos; en Windows la consola
+# puede estar en cp1252 y fallar al imprimirlos. Forzamos UTF-8.
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 TABLAS_ESPERADAS = [
     "dim_proveedores",
     "dim_instituciones",

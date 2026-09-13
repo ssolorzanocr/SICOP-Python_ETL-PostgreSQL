@@ -1,15 +1,21 @@
 """
 SICOP - Prototipo de inteligencia de negocio para proveedores MIPYME.
 
-Caso de uso único (primera aproximación del TFM):
+Caso de uso 1 (comportamiento de la demanda institucional):
     "Un proveedor MIPYME quiere descubrir y evaluar los carteles de su
-    segmento de producto": elige un segmento CABIS/UNSPSC y una ventana
-    de meses, y la aplicación responde en una sola pantalla quién compra,
-    cuánto suele costar, cuánta competencia existe y quién gana.
+    segmento de producto": elige un segmento de la clasificación UNSPSC
+    de SICOP y una ventana de meses, y la aplicación responde en una sola
+    pantalla quién compra, cuánto suele costar, cuánta competencia existe
+    y quién gana.
 
 Fuente de datos: PostgreSQL (proyecto_sicop_v1), poblado por el pipeline
 ETL de 4 pasos del grupo (Observatorio de Compra Pública -> staging ->
-modelo dimensional -> catálogo CABIS).
+modelo dimensional -> catálogo de productos UNSPSC).
+
+Nota de terminología: los códigos de producto de SICOP siguen el estándar
+UNSPSC (Naciones Unidas). No confundir con CABYS, el catálogo de bienes y
+servicios del Ministerio de Hacienda para facturación electrónica, que es
+otro sistema.
 """
 
 import altair as alt
@@ -72,7 +78,7 @@ def get_periodo_referencia(_engine: Engine):
 
 @st.cache_data(ttl=600)
 def get_segmentos(_engine: Engine) -> pd.DataFrame:
-    """Segmentos CABIS/UNSPSC ordenados por volumen de líneas de cartel
+    """Segmentos UNSPSC ordenados por volumen de líneas de cartel
     (no alfabéticamente), para que el selectbox muestre primero los
     segmentos más relevantes para el usuario."""
     query = text("""
@@ -312,7 +318,7 @@ if df_segmentos.empty:
 col_filtro_1, col_filtro_2 = st.columns([2, 1])
 with col_filtro_1:
     segmento = st.selectbox(
-        "Segmento de producto (CABIS / UNSPSC)",
+        "Segmento de producto (clasificación UNSPSC de SICOP)",
         options=df_segmentos["nombre_segmento"],
         help="Ordenado por volumen de líneas de cartel publicadas, de mayor a menor.",
     )

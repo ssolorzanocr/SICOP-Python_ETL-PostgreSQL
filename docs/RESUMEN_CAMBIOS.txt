@@ -14,8 +14,9 @@ app.py
 
   Ahora: un caso de uso completo y navegable — "un proveedor MIPYME
   quiere descubrir y evaluar los carteles de su segmento de producto".
-  El usuario elige un segmento CABIS y una ventana de meses, y la
-  aplicación responde en una sola pantalla:
+  El usuario elige un segmento de producto (clasificación UNSPSC de
+  SICOP) y una ventana de meses, y la aplicación responde en una sola
+  pantalla:
     - Cuatro indicadores (st.metric): carteles publicados, monto total
       adjudicado, proveedores distintos que ofertaron y promedio de
       ofertas por línea, este último como indicador de competencia.
@@ -126,45 +127,59 @@ puede recortarse sin perder los cuatro puntos exigidos.
 
 5. ESTADO DE LA SUBIDA A GITHUB
 --------------------------------
-Los cambios YA ESTÁN PREPARADOS en un clon del repositorio del grupo,
-ubicado en:
+El 13 de septiembre André subió los archivos al repositorio del grupo
+(https://github.com/ssolorzanocr/SICOP-Python_ETL-PostgreSQL) mediante
+la interfaz web de GitHub (commit e0eccd1, "Add files via upload").
+Con esa versión Sergio ejecutó el prototipo contra la base real.
 
-    MBA\SICOP-repo-git\
+Ese upload dejó dos detalles pendientes, que se corrigen en el commit
+siguiente junto con el cambio de terminología del punto 6:
 
-Ese clon se descargó de
-https://github.com/ssolorzanocr/SICOP-Python_ETL-PostgreSQL
-y ya tiene dos commits hechos sobre la rama main:
+  - .streamlit/secrets.toml.example no había subido (la interfaz web
+    no incluye carpetas que empiezan con punto). Se agrega.
+  - requeriments.txt (nombre con error de tipeo) no se había borrado,
+    por lo que el repositorio tenía los dos archivos. Se elimina; queda
+    solo requirements.txt.
 
-    8f81e8a  Prototipo Streamlit por segmento CABIS y pruebas
-             automatizadas
-             9 archivos, 1139 líneas agregadas, 64 eliminadas
+Verificación de seguridad: el archivo .streamlit/secrets.toml (con la
+contraseña real de PostgreSQL) está excluido por .gitignore y NO se
+incluye. Solo se sube la plantilla secrets.toml.example, cuyo campo de
+contraseña dice "REEMPLAZAR_CON_TU_CONTRASEÑA".
 
-    54d5f98  Agrega documentación del prototipo a docs/
-             La sección del TFM en .docx y este mismo resumen
 
-LA SUBIDA (git push) NO SE PUDO COMPLETAR. La computadora no tiene
-ninguna credencial de GitHub configurada: no existe .gitconfig, no hay
-gestor de credenciales ni GitHub CLI instalado. El push se rechaza
-antes de empezar, pidiendo usuario y contraseña.
+6. CAMBIO DE TERMINOLOGÍA: CABIS → UNSPSC
+-------------------------------------------
+Sergio señaló en el chat del 13 de septiembre que no se debe hacer
+referencia a "códigos CABIS": CABYS es el catálogo de bienes y servicios
+del Ministerio de Hacienda para facturación electrónica, y no tiene
+relación con los códigos de producto de SICOP, que siguen el estándar
+UNSPSC (como ya se describía en las entregas de las asignaturas 5 y 6).
 
-Además, el repositorio pertenece a la cuenta ssolorzanocr (Sergio), por
-lo que hay que confirmar que André tenga permiso de escritura sobre él.
+Se reemplazó el término en app.py (incluida la etiqueta visible del
+filtro, que ahora dice "Segmento de producto (clasificación UNSPSC de
+SICOP)"), en Consultas Representativas v2.sql y en este resumen. La
+sección del TFM en .docx no lo usaba.
 
-Para completar la subida, desde MBA\SICOP-repo-git\ ejecutar:
+Pendiente de limpieza futura: los archivos del Paso 4 en
+Código_Productos/ (README y script SQL, trabajo anterior de André)
+todavía usan "CABIS" en comentarios. No se tocaron en este commit para
+no mezclar cambios; conviene acordar con el grupo cuándo hacerlo.
 
-    git push origin main
 
-Git pedirá autenticación en ese momento (abre una ventana del navegador
-para iniciar sesión en GitHub). Si aparece un error de permisos, la vía
-alternativa es hacer un fork del repositorio y abrir un pull request, o
-pedirle a Sergio acceso de colaborador.
+7. CASOS DE USO DEL PROTOTIPO
+-------------------------------
+Sergio definió tres casos de uso para el alcance del TFM:
 
-Verificación de seguridad hecha antes del commit: el archivo
-.streamlit/secrets.toml (con la contraseña real de PostgreSQL) está
-excluido por .gitignore y NO se incluyó. Solo se subió la plantilla
-secrets.toml.example, cuyo campo de contraseña dice
-"REEMPLAZAR_CON_TU_CONTRASEÑA".
+  UC1  Comportamiento de la demanda institucional
+       (productos demandados, frecuencia, proveedores adjudicatarios,
+        precios, tiempos de adjudicación)
+  UC2  Caracterización de proveedores
+       (productos ofertados, precios, adjudicaciones, desempeño)
+  UC3  Predicción de adjudicación
+       (modelo predictivo de clasificación — asignatura 7)
 
-La sección del TFM (Seccion_4_Prototipo_Dashboarding_Andre.docx) sí
-quedó incluida, dentro de docs/, junto a los diagramas que el
-repositorio ya tenía.
+El prototipo cubre el UC1. De las cinco herramientas que Sergio lista
+para ese caso, la versión actual tiene tres (productos por segmento,
+frecuencia mensual, ranking de adjudicatarios). Las dos que faltan
+—precios estimado/ofertado/adjudicado y tiempos de adjudicación— se
+agregan en la siguiente entrega, antes del 20 de septiembre.

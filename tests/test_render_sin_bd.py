@@ -21,6 +21,11 @@ import pandas as pd
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
+# En Windows la consola o una redirección a archivo pueden usar cp1252, que
+# no sabe imprimir "₡" ni algunos acentos. Forzamos UTF-8 para que la prueba
+# no falle por el simple hecho de mostrar un monto en colones.
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 FECHA_MAX = dt.datetime(2026, 6, 30)
 
 

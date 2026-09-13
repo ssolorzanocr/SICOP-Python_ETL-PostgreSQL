@@ -42,7 +42,7 @@ LIMIT 20;
 */
 
 -- ============================================================
--- Consultas del prototipo Streamlit por segmento CABIS (André)
+-- Consultas del prototipo Streamlit por segmento de producto UNSPSC (André)
 -- Caso de uso: "un proveedor MIPYME quiere descubrir y evaluar
 -- los carteles de su segmento de producto".
 -- Ejemplo de valores: segmento = 'Equipos y suministros médicos',
