@@ -1,0 +1,170 @@
+RESUMEN DE CAMBIOS — André Plannerer — 12 de septiembre de 2026
+=================================================================
+Prototipo Streamlit y sección del documento para el 1.er entregable
+del TFM (fecha límite: 20 de septiembre de 2026).
+
+
+1. QUÉ CAMBIÓ EN CADA ARCHIVO
+------------------------------
+
+app.py
+  Antes: un único gráfico (top 20 de instituciones con más carteles
+  publicados), sin filtros, sin caché, con la conexión abierta a nivel
+  de módulo.
+
+  Ahora: un caso de uso completo y navegable — "un proveedor MIPYME
+  quiere descubrir y evaluar los carteles de su segmento de producto".
+  El usuario elige un segmento CABIS y una ventana de meses, y la
+  aplicación responde en una sola pantalla:
+    - Cuatro indicadores (st.metric): carteles publicados, monto total
+      adjudicado, proveedores distintos que ofertaron y promedio de
+      ofertas por línea, este último como indicador de competencia.
+    - Instituciones más activas en el segmento (barras horizontales).
+    - Ranking de proveedores por monto adjudicado.
+    - Evolución mensual de carteles publicados vs. adjudicados.
+    - Tabla de detalle con los carteles más recientes.
+
+  Mejoras técnicas: engine de SQLAlchemy creado una sola vez
+  (@st.cache_resource), todas las consultas con caché (@st.cache_data),
+  consultas parametrizadas (nunca interpolación de texto), manejo de
+  error legible cuando falta secrets.toml o PostgreSQL no responde, y
+  montos formateados en colones.
+
+requirements.txt
+  El archivo se llamaba "requeriments.txt" (error de tipeo), mientras
+  que las instrucciones indicaban ejecutar
+  "pip install -r requirements.txt", por lo que la instalación fallaba.
+  Se corrigió el nombre y se agregó sqlalchemy, que ahora usa app.py.
+
+requirements-dev.txt  (nuevo)
+  Dependencias necesarias solo para ejecutar las pruebas (pyflakes y
+  sqlglot). La aplicación no las requiere para funcionar.
+
+Consultas Representativas v2.sql
+  Se agregaron al final las seis consultas nuevas que usa el prototipo
+  (segmentos disponibles, indicadores, instituciones activas, ranking
+  de proveedores, evolución mensual y detalle de carteles), comentadas
+  y con valores de ejemplo, siguiendo el mismo estilo del archivo.
+
+Instrucciones Streamlit local.txt
+  Se agregaron dos secciones: "CÓMO PROBAR EL CÓDIGO", con los cuatro
+  comandos de prueba, y el procedimiento para tomar las cuatro
+  capturas de pantalla que necesita la sección del documento.
+
+tests/  (nuevo)
+  validar_sql.py           Verifica que las consultas parseen como
+                           PostgreSQL y que toda columna referenciada
+                           exista en el esquema del Paso 1.
+  test_render_sin_bd.py    Ejecuta app.py completo dentro del simulador
+                           oficial de Streamlit, con datos ficticios,
+                           y comprueba KPIs, gráficos y tabla.
+  test_consultas_con_bd.py Ejecuta las consultas contra la base real y
+                           reporta filas por tabla y por consulta.
+
+.streamlit/secrets.toml.example  (nuevo)
+  Plantilla de configuración de conexión, sin credenciales. Cada
+  integrante la copia como secrets.toml y coloca su propia contraseña.
+  El archivo secrets.toml real sigue excluido por .gitignore.
+
+Seccion_4_Prototipo_Dashboarding_Andre.docx  (nuevo)
+  Texto en español de la sección "PROTOTIPO DASHBOARDING — PRIMERA
+  APROXIMACIÓN" del documento del grupo, listo para integrar. Cubre los
+  cuatro puntos solicitados: arquitectura del prototipo, qué hace y qué
+  información utiliza, relación con la hipótesis del trabajo, y
+  justificación de las decisiones de visualización (con citas en APA 7).
+  Formato conforme al reglamento: Arial 12, títulos 14, interlineado
+  1,5, A4, márgenes de 3 y 2,5 cm.
+
+
+2. PROBLEMAS ENCONTRADOS Y CORREGIDOS
+--------------------------------------
+
+  a) El manejo de error para secrets.toml ausente no funcionaba:
+     Streamlit no levanta KeyError en ese caso, sino una excepción
+     propia, por lo que el usuario veía un error técnico en lugar del
+     mensaje explicativo. Corregido.
+
+  b) "use_container_width" está obsoleto y marcado para eliminarse
+     después del 31/12/2025, fecha ya vencida. Todavía funciona, pero
+     podría dejar de hacerlo antes de la defensa de febrero de 2027.
+     Se reemplazó por width="stretch" en los cuatro puntos donde se
+     usaba.
+
+
+3. QUÉ ESTÁ VERIFICADO Y QUÉ NO
+--------------------------------
+
+VERIFICADO (sin base de datos):
+  - pyflakes: ningún import faltante ni nombre indefinido.
+  - Las siete consultas parsean como PostgreSQL y todas las columnas
+    que utilizan existen en el esquema del Paso 1 (7/7 correctas).
+  - La aplicación renderiza por completo con datos simulados: los
+    cuatro indicadores se formatean correctamente, los tres gráficos y
+    la tabla se construyen, y cambiar de segmento no provoca errores.
+
+NO VERIFICADO — requiere la máquina con la base cargada:
+  - Ninguna consulta se ejecutó contra datos reales, por lo que no se
+    ha confirmado que los resultados sean coherentes ni cuánto tardan.
+  - No se tomaron las capturas de pantalla que la sección del documento
+    necesita; los marcadores [FIGURA N ... PENDIENTE] siguen en el
+    archivo .docx.
+  - La sección del documento contiene un marcador [PENDIENTE: ...] que
+    debe completarse con cifras reales del segmento de mayor actividad.
+
+En resumen: el código está verificado, los datos no. Antes de integrar
+la sección al documento del grupo, conviene ejecutar
+"python tests/test_consultas_con_bd.py" en la computadora que tiene
+proyecto_sicop_v1 cargada.
+
+
+4. OBSERVACIÓN SOBRE LA EXTENSIÓN DEL TEXTO
+--------------------------------------------
+La sección del documento quedó en aproximadamente cinco páginas. Si el
+grupo considera que es demasiado extensa frente al resto del documento,
+puede recortarse sin perder los cuatro puntos exigidos.
+
+
+5. ESTADO DE LA SUBIDA A GITHUB
+--------------------------------
+Los cambios YA ESTÁN PREPARADOS en un clon del repositorio del grupo,
+ubicado en:
+
+    MBA\SICOP-repo-git\
+
+Ese clon se descargó de
+https://github.com/ssolorzanocr/SICOP-Python_ETL-PostgreSQL
+y ya tiene dos commits hechos sobre la rama main:
+
+    8f81e8a  Prototipo Streamlit por segmento CABIS y pruebas
+             automatizadas
+             9 archivos, 1139 líneas agregadas, 64 eliminadas
+
+    54d5f98  Agrega documentación del prototipo a docs/
+             La sección del TFM en .docx y este mismo resumen
+
+LA SUBIDA (git push) NO SE PUDO COMPLETAR. La computadora no tiene
+ninguna credencial de GitHub configurada: no existe .gitconfig, no hay
+gestor de credenciales ni GitHub CLI instalado. El push se rechaza
+antes de empezar, pidiendo usuario y contraseña.
+
+Además, el repositorio pertenece a la cuenta ssolorzanocr (Sergio), por
+lo que hay que confirmar que André tenga permiso de escritura sobre él.
+
+Para completar la subida, desde MBA\SICOP-repo-git\ ejecutar:
+
+    git push origin main
+
+Git pedirá autenticación en ese momento (abre una ventana del navegador
+para iniciar sesión en GitHub). Si aparece un error de permisos, la vía
+alternativa es hacer un fork del repositorio y abrir un pull request, o
+pedirle a Sergio acceso de colaborador.
+
+Verificación de seguridad hecha antes del commit: el archivo
+.streamlit/secrets.toml (con la contraseña real de PostgreSQL) está
+excluido por .gitignore y NO se incluyó. Solo se subió la plantilla
+secrets.toml.example, cuyo campo de contraseña dice
+"REEMPLAZAR_CON_TU_CONTRASEÑA".
+
+La sección del TFM (Seccion_4_Prototipo_Dashboarding_Andre.docx) sí
+quedó incluida, dentro de docs/, junto a los diagramas que el
+repositorio ya tenía.

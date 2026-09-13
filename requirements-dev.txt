@@ -1,0 +1,5 @@
+# Dependencias solo para ejecutar las pruebas (tests/).
+# La aplicación no las necesita para funcionar.
+-r requirements.txt
+pyflakes
+sqlglot

@@ -74,3 +74,64 @@ Esto ayuda a evitar conflictos de versiones y permite que todos los integrantes 
 - requirements.txt contiene la lista de dependencias necesarias para que todos utilicen las mismas librerías. En el caso de que
 haya que agregar más, se agregarían ahí para despues nada más jalar cambios e instalar (o reinstalar).
 - .streamlit/secrets.toml es local y no debe subirse al repositorio. (tiene las credenciales de la BD local)
+
+CÓMO PROBAR EL CÓDIGO
+----------------------
+Instalar primero las dependencias de prueba (una sola vez):
+
+    python -m pip install -r requirements-dev.txt
+
+1) Revisión estática (imports, nombres indefinidos). No necesita base de datos:
+
+    python -m pyflakes app.py
+
+2) Validación de las consultas SQL contra el esquema del Paso 1.
+   Verifica que toda columna referenciada exista. No necesita base de datos:
+
+    python tests/validar_sql.py app.py
+
+3) Prueba de renderizado con datos simulados. Ejecuta app.py completo dentro
+   del simulador de Streamlit y comprueba KPIs, gráficos y tabla.
+   No necesita base de datos:
+
+    python tests/test_render_sin_bd.py
+
+4) Prueba contra la base real. Requiere PostgreSQL iniciado, proyecto_sicop_v1
+   cargada (Pasos 1 a 4) y .streamlit/secrets.toml configurado:
+
+    python tests/test_consultas_con_bd.py
+
+   Reporta filas por tabla y filas devueltas por cada consulta del prototipo.
+   Si alguna sale VACÍA o SIN FILAS, el problema está en la carga del ETL, no
+   en el código de la aplicación.
+
+Los pasos 1 a 3 corren en cualquier computadora. El paso 4 es el único que
+confirma que el prototipo va a mostrar datos reales.
+
+
+CAPTURAS DE PANTALLA PARA EL DOCUMENTO Y LOS ANEXOS (sección 4.2 del TFM)
+--------------------------------------------------------------------------
+Con la app corriendo (paso 11) y el banco proyecto_sicop_v1 cargado:
+
+1. Elegir en el selectbox un segmento con actividad alta (por ejemplo,
+   "Equipos y suministros médicos" o el que aparezca primero en la lista,
+   ya que está ordenada por volumen).
+2. FIGURA 1 (arquitectura): no se toma de la app; es un diagrama a partir
+   de docs/ArquitecturaMVP_simplificada.png, agregándole el bloque de
+   Streamlit al final del flujo.
+3. FIGURA 2: capturar la fila de 4 métricas (st.metric) + el gráfico de
+   "Instituciones más activas" completo, con el segmento y la ventana de
+   meses visibles en los filtros.
+4. FIGURA 3: capturar juntos el ranking de proveedores (izquierda) y la
+   evolución mensual publicados-vs-adjudicados (derecha).
+5. FIGURA 4: capturar la tabla de detalle de carteles (scroll completo o
+   las primeras 10-15 filas).
+6. Usar el zoom del navegador a 100% y una ventana de al menos 1600px de
+   ancho para que las etiquetas de los ejes no se corten.
+7. Guardar cada captura como PNG en docs/capturas_prototipo/ (crear la
+   carpeta) con nombres fig1_arquitectura.png, fig2_kpis.png,
+   fig3_ranking_evolucion.png, fig4_detalle.png.
+8. Insertar cada una en el lugar de su marcador [FIGURA N. ... PENDIENTE]
+   dentro de Seccion_4_Prototipo_Dashboarding_Andre.docx (carpeta
+   Trabajo Fin de Máster), numerarlas y agregar el pie de figura antes de
+   pegar esa sección en el documento general del grupo.
