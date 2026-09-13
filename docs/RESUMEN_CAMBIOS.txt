@@ -178,8 +178,41 @@ Sergio definió tres casos de uso para el alcance del TFM:
   UC3  Predicción de adjudicación
        (modelo predictivo de clasificación — asignatura 7)
 
-El prototipo cubre el UC1. De las cinco herramientas que Sergio lista
-para ese caso, la versión actual tiene tres (productos por segmento,
-frecuencia mensual, ranking de adjudicatarios). Las dos que faltan
-—precios estimado/ofertado/adjudicado y tiempos de adjudicación— se
-agregan en la siguiente entrega, antes del 20 de septiembre.
+El prototipo cubre el UC1 completo. Las cinco herramientas que Sergio
+lista para ese caso están implementadas: productos por segmento,
+frecuencia mensual, ranking de adjudicatarios, y —agregadas el 13 de
+septiembre— precios y tiempos de adjudicación.
+
+
+8. PRECIOS Y TIEMPOS DE ADJUDICACIÓN (13 de septiembre)
+--------------------------------------------------------
+Se agregaron a app.py dos indicadores y una tabla:
+
+  - KPI "Precio adjudicado vs. estimado": mediana de la razón entre el
+    precio unitario adjudicado y el estimado del cartel, línea a línea.
+    Se usa la razón y no el precio absoluto porque los productos de un
+    mismo segmento no son comparables entre sí. El tooltip muestra la
+    misma razón para el precio ofertado.
+  - KPI "Días hasta adjudicación": mediana de días entre la publicación
+    del cartel y la adjudicación firme, con P25-P75 en el tooltip. El
+    gráfico de instituciones muestra además la mediana de cada una.
+  - Tabla "Precios por producto": para los productos más demandados del
+    segmento, mediana del precio estimado, ofertado y adjudicado en
+    colones, y la variación adjudicado vs. estimado.
+
+Moneda: el pipeline (Pasos 2 y 3) carga los precios unitarios en la
+moneda original, con tipo_moneda y tipo_cambio_crc al lado, y no los
+convierte. Las consultas nuevas convierten a colones con esa regla:
+  tipo_moneda = 'CRC'  -> precio tal cual
+  tipo_cambio_crc > 0  -> precio * tipo_cambio_crc
+  en otro caso         -> se excluye la línea
+Queda PENDIENTE confirmar contra la base (a) el literal exacto de
+tipo_moneda para colones y (b) en qué moneda viene MONTO_ADJU_LINEA,
+que alimenta el KPI de monto adjudicado ya existente. Si viene en
+moneda original, ese KPI mezcla colones y dólares, y convendría mapear
+MONTO_ADJU_LINEA_CRC en el Paso 2. Las consultas de verificación están
+en RESPUESTA_GRUPO_13sep.txt.
+
+Pruebas: validar_sql.py 10/10; test_render_sin_bd.py cubre los seis
+KPIs, las dos tablas y los casos con NULL. Sin ejecución contra datos
+reales todavía.
