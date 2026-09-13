@@ -119,13 +119,13 @@ Con la app corriendo (paso 11) y el banco proyecto_sicop_v1 cargado:
 2. FIGURA 1 (arquitectura): no se toma de la app; es un diagrama a partir
    de docs/ArquitecturaMVP_simplificada.png, agregándole el bloque de
    Streamlit al final del flujo.
-3. FIGURA 2: capturar la fila de 4 métricas (st.metric) + el gráfico de
+3. FIGURA 2: capturar la fila de 6 métricas (st.metric) + el gráfico de
    "Instituciones más activas" completo, con el segmento y la ventana de
    meses visibles en los filtros.
 4. FIGURA 3: capturar juntos el ranking de proveedores (izquierda) y la
    evolución mensual publicados-vs-adjudicados (derecha).
-5. FIGURA 4: capturar la tabla de detalle de carteles (scroll completo o
-   las primeras 10-15 filas).
+5. FIGURA 4: capturar la tabla "Precios por producto" y, debajo, la tabla
+   de detalle de carteles (las primeras 10-15 filas de cada una).
 6. Usar el zoom del navegador a 100% y una ventana de al menos 1600px de
    ancho para que las etiquetas de los ejes no se corten.
 7. Guardar cada captura como PNG en docs/capturas_prototipo/ (crear la
