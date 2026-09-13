@@ -61,6 +61,37 @@ def _df_instituciones() -> pd.DataFrame:
             "Universidad Nacional",
         ],
         "carteles_publicados": [812, 233, 118],
+        # la tercera no tiene adjudicaciones -> NULL a propósito
+        "dias_mediana_adjudicacion": [98.0, 143.5, None],
+    })
+
+
+def _df_precios() -> pd.DataFrame:
+    return pd.DataFrame({
+        "razon_adj_est_mediana": [0.876],
+        "razon_of_est_mediana": [0.912],
+        "lineas_adjudicadas_con_precio": [1044],
+        "lineas_ofertadas_con_precio": [3860],
+    })
+
+
+def _df_precios_por_producto() -> pd.DataFrame:
+    return pd.DataFrame({
+        "cod_producto": [4017150100123456, 4017160200234567, 4017170300345678],
+        "producto": ["TUBERÍA PVC 100 mm", "VÁLVULA DE COMPUERTA 2\"", "BOMBA CENTRÍFUGA 5 HP"],
+        "carteles": [214, 97, 41],
+        "precio_estimado_mediana": [12500.0, 48000.0, 1350000.0],
+        "precio_ofertado_mediana": [11800.0, None, 1290000.0],   # NULL a propósito
+        "precio_adjudicado_mediana": [11200.0, 45500.0, None],   # NULL a propósito
+    })
+
+
+def _df_tiempos() -> pd.DataFrame:
+    return pd.DataFrame({
+        "dias_mediana": [121.0],
+        "dias_p25": [64.0],
+        "dias_p75": [198.0],
+        "lineas_adjudicadas": [1044],
     })
 
 
@@ -96,6 +127,14 @@ def _df_detalle() -> pd.DataFrame:
 def _fake_read_sql_query(sql, con, params=None, **kwargs) -> pd.DataFrame:
     """Devuelve la tabla ficticia que corresponde según el texto del SQL."""
     texto = str(sql)
+    # Las consultas más específicas van primero para que una palabra común
+    # (p. ej. "nombre_institucion") no capture la consulta equivocada.
+    if "razon_adj_est_mediana" in texto:
+        return _df_precios()
+    if "precio_estimado_mediana" in texto:
+        return _df_precios_por_producto()
+    if "dias_p25" in texto:
+        return _df_tiempos()
     if "lineas_publicadas" in texto:
         return _df_segmentos()
     if "promedio_ofertas_por_linea" in texto:
@@ -155,15 +194,26 @@ def main() -> int:
         for err in at.error:
             problemas.append(f"st.error mostrado: {err.value}")
 
-    # La pantalla debe contener los 4 KPIs, 3 gráficos y la tabla de detalle.
-    if len(at.metric) != 4:
-        problemas.append(f"Se esperaban 4 KPIs (st.metric), hay {len(at.metric)}")
+    # La pantalla debe contener 6 KPIs, 3 gráficos y 2 tablas (precios y detalle).
+    if len(at.metric) != 6:
+        problemas.append(f"Se esperaban 6 KPIs (st.metric), hay {len(at.metric)}")
     if len(at.selectbox) != 1:
         problemas.append(f"Se esperaba 1 selectbox de segmento, hay {len(at.selectbox)}")
     if len(at.slider) != 1:
         problemas.append(f"Se esperaba 1 slider de meses, hay {len(at.slider)}")
-    if len(at.dataframe) != 1:
-        problemas.append(f"Se esperaba 1 tabla de detalle, hay {len(at.dataframe)}")
+    if len(at.dataframe) != 2:
+        problemas.append(f"Se esperaban 2 tablas (precios y detalle), hay {len(at.dataframe)}")
+
+    # Los KPIs nuevos deben mostrar el formato esperado con los datos ficticios
+    valores = {m.label: str(m.value) for m in at.metric}
+    if valores.get("Precio adjudicado vs. estimado") != "-12,4 %":
+        problemas.append(
+            "El KPI de precio no formateó la razón 0,876 como '-12,4 %': "
+            f"mostró {valores.get('Precio adjudicado vs. estimado')!r}")
+    if valores.get("Días hasta adjudicación") != "121 días":
+        problemas.append(
+            "El KPI de tiempos no formateó la mediana 121.0 como '121 días': "
+            f"mostró {valores.get('Días hasta adjudicación')!r}")
 
     print("=" * 62)
     print("PRUEBA DE RENDERIZADO (sin base de datos)")
