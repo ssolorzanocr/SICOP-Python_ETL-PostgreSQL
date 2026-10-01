@@ -1,0 +1,36 @@
+Hola equipo 👋 Avance de mi parte para el 2º entregable (18/10):
+
+1) ASIG. 7 – Análisis no supervisado (el 5 % del enunciado) + aporte al preprocesamiento (20 %)
+   - Cuaderno clustering_proveedores.ipynb (+ .html) sobre el sicop.duckdb del release de Sergio.
+   - KMeans con k=4 sobre 1.990 proveedores (los que tienen ≥5 líneas resueltas):
+     Generalistas de alto volumen (450) · Competidores focalizados (653) ·
+     Nicho con poca competencia (502, ganan casi todo con <1 competidor) · Sin adjudicaciones (385).
+   - Hallazgo para el TFM: el tamaño de empresa casi NO explica el perfil (V de Cramér 0,05).
+     Las MIPYMES están en todos los grupos → la brecha es de información, no de tamaño.
+   - Mapa de oportunidades por segmento (alta demanda + baja competencia) → evidencia para la hipótesis 3.
+   - Ya está redactada la sección para la memoria (Seccion_Asig7_No_Supervisado.docx), con APA.
+
+2) APP STREAMLIT – ahora lee DuckDB (el mismo archivo del pipeline), 3 páginas = UC1, UC2, UC3.
+   - UC3 lee la tabla predicciones_adjudicacion (no carga el .joblib de 770 MB).
+
+3) TFM – propuesta de la sección «Definición de la aplicación» (Seccion_TFM_Definicion_App.docx).
+   Tiene 3 párrafos marcados [DECISIÓN DEL GRUPO] que necesito que validemos:
+   a) documentar el cambio PostgreSQL → DuckDB;
+   b) publicar en Streamlit Community Cloud en vez de Supabase;
+   c) justificar el cambio "extensión de navegador" → herramienta web (la ficha aprobada dice extensión).
+
+⚠️ Tres cosas que encontré en los datos (para Sergio / David):
+   - Cobertura de ofertas: solo ~12 % de los procedimientos de fact_lineas_carteles tiene alguna
+     oferta en fact_lineas_ofertas, y cae a casi 0 en ago–sep/2026. ¿Filtro en el ETL o los
+     archivos del Observatorio vienen incompletos? Afecta también al entrenamiento del modelo.
+   - tipo_cambio_crc trae el tipo de cambio del DÓLAR en todas las filas (también CRC y EUR).
+     Multiplicar euros por ese valor da un monto incorrecto (~900 ofertas y ~300 adjudicaciones
+     en EUR). Sergio, ojo con el CASE del commit del 28/09: convierte todo lo que no es CRC.
+   - Las predicciones tienen mediana 2,3 %, pero la tasa real de éxito anda en 28–33 %. Parece
+     que el modelo no está calibrado (¿será por el desbalance o por la censura de líneas en
+     evaluación?). En la app lo muestro como orden relativo con aviso, hasta que lo revisemos.
+
+El release del 24/09 es anterior al commit de Sergio que pasa los montos a colones (28/09).
+Sergio, cuando publiques un release nuevo, vuelvo a correr el cuaderno: es reproducible.
+
+¿Les parece si lo vemos en la próxima llamada? Gracias!
