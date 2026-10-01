@@ -1,0 +1,5 @@
+streamlit>=1.40
+duckdb>=1.1
+pandas
+pyarrow
+altair

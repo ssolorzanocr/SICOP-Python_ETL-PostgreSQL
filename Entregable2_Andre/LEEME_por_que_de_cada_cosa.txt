@@ -1,0 +1,502 @@
+===============================================================================
+ TFM SICOP · Grupo 2 · Parte de André Plannerer para el 2º entregable (18/10/2026)
+ Qué se hizo, dónde está y POR QUÉ se hizo así
+ Preparado el 30/09/2026 · actualizado el 30/09/2026 (gráficos nuevos + GitHub)
+===============================================================================
+
+ÍNDICE
+  0. Resumen en 10 líneas
+  1. Qué pide el 2º entregable y qué parte es de André
+  2. Estructura de la carpeta D:\mba
+  3. Asignatura 7 – análisis no supervisado (cuaderno)
+  4. Aplicación Streamlit (3 páginas)
+  5. Textos para los documentos (docx)
+  6. Hallazgos de calidad de datos (para el grupo)
+  7. Decisiones que quedan para el grupo
+  8. Cómo ejecutar todo
+  9. Pendientes de André hasta el 18/10
+ 10. Registro de cambios de código (qué se cambió, archivo por archivo)
+ 11. Paso a paso para subir a GitHub
+
+
+-------------------------------------------------------------------------------
+0. RESUMEN EN 10 LÍNEAS
+-------------------------------------------------------------------------------
+- Se hizo la parte NO SUPERVISADA de la Asignatura 7 (segmentación de proveedores con
+  KMeans) y se documentó el preprocesamiento: cuaderno reproducible + figuras + texto.
+- Se migró la app Streamlit de PostgreSQL a DuckDB (el archivo que publica el pipeline
+  de Sergio) y se pasó de 1 página a 3: una por caso de uso (UC1, UC2, UC3).
+- Se redactaron dos secciones en Word, en español, con formato del reglamento y APA:
+  una para la memoria de la Asig. 7 y otra para el TFM («Definición de la aplicación»).
+- Se encontraron 3 problemas en los datos que afectan a todo el grupo (sección 6).
+- Hay 3 decisiones que NO tomé solo y que quedan marcadas para el grupo (sección 7).
+- Todo quedó en una carpeta nueva del repo del grupo (Entregable2_Andre/), en la rama
+  «entregable2-andre», con commit local listo. Falta solo el push (sección 11).
+
+
+-------------------------------------------------------------------------------
+1. QUÉ PIDE EL 2º ENTREGABLE Y QUÉ PARTE ES DE ANDRÉ
+-------------------------------------------------------------------------------
+Entrega 18/10/2026: Asignatura 7 (Machine Learning) + capítulos de metodología, fuente
+de datos y definición de la aplicación del TFM.
+
+Asignatura 7 (NEXT_Trabajo_Asignatura7.pdf) pide, en un solo trabajo de grupo:
+  - Preprocesamiento ...................... 20 %
+  - Modelo supervisado principal .......... 70 %   -> Sergio (ya tiene un Random Forest)
+  - Modelo avanzado / extensión ........... 5 %    -> el pipeline automatizado de Sergio
+  - Análisis no supervisado ............... 5 %    -> ANDRÉ (hecho)
+  - Entregables: cuaderno .ipynb + memoria en PDF con 9 apartados.
+
+POR QUÉ André tomó el no supervisado:
+  - Es la única parte del enunciado que nadie tenía (el repo de Sergio no la tiene).
+  - Es autocontenida: no depende de que nadie termine otra cosa.
+  - Conecta directo con el componente de André (la app): la segmentación se vuelve
+    la página del caso de uso 2. Así el 5 % no queda como un ejercicio suelto, que es
+    justo lo que el enunciado valora («coherencia con el TFM», «aportar valor»).
+  - Responde la HIPÓTESIS 3 del primer avance («existen áreas de oportunidad
+    desatendidas»), que hasta ahora no tenía cómo comprobarse.
+
+TFM, componente de André = «configuración y consultas del Streamlit». Para el 2º
+avance eso se traduce en la sección «Definición de la aplicación».
+
+
+-------------------------------------------------------------------------------
+2. ESTRUCTURA DE LA CARPETA  (todo en D:\mba, nada en OneDrive)
+-------------------------------------------------------------------------------
+D:\mba\
+├── .venv\                              entorno Python (duckdb, sklearn, streamlit...)
+├── Modelo_predictivo_SICOP\            clon del repo de Sergio
+│   ├── data\sicop.duckdb               base de datos (247 MB, release del 24/09)
+│   └── modelo\clasificador_adjudicacion.joblib   modelo de Sergio (768 MB)
+├── SICOP-Python_ETL-PostgreSQL\       clon del repo del grupo (rama entregable2-andre)
+│   └── Entregable2_Andre\              COPIA VERSIONADA de todo lo de abajo  <- usar esta
+└── Andre_Entregable2\                  carpeta de trabajo original (mismo contenido)
+    ├── LEEME_por_que_de_cada_cosa.txt  este archivo
+    ├── notebooks\
+    │   ├── clustering_proveedores.ipynb   CUADERNO DE LA ASIG. 7 (ejecutado, con resultados)
+    │   ├── clustering_proveedores.html    el mismo, para abrir en el navegador / anexar
+    │   ├── features.sql                   consulta que arma la tabla por proveedor
+    │   └── _genera_notebook.py            fuente del cuaderno (ver 3.7)
+    ├── app\
+    │   ├── app.py                         punto de entrada (navegación)
+    │   ├── datos.py                       conexión DuckDB + conversión de moneda + formatos
+    │   ├── paginas\uc1_demanda.py         UC1
+    │   ├── paginas\uc2_proveedores.py     UC2
+    │   ├── paginas\uc3_prediccion.py      UC3
+    │   ├── datos\*.parquet, *.joblib      salida del cuaderno que lee la página UC2
+    │   ├── tests\prueba_paginas.py        prueba automática de las 3 páginas
+    │   ├── requirements.txt
+    │   └── .streamlit\secrets.toml.example
+    ├── figuras\                        9 figuras del análisis + 5 capturas de la app
+    └── textos\
+        ├── Seccion_Asig7_No_Supervisado.docx   para la memoria de la Asig. 7
+        ├── Seccion_TFM_Definicion_App.docx     para el documento del TFM
+        ├── Mensaje_para_el_grupo.txt           listo para pegar en el chat
+        └── _genera_textos.py                   fuente de los docx
+
+POR QUÉ en D:\mba y no en OneDrive: pedido explícito de André. Además, la base y el
+modelo suman ~1 GB y no conviene que OneDrive los sincronice.
+
+POR QUÉ una carpeta separada (Andre_Entregable2) y no dentro del repo de Sergio: el
+repo es de Sergio; no se mezcla trabajo propio con el suyo sin acordarlo. Se puede
+subir después como carpeta del repo del grupo (ver sección 7).
+
+
+-------------------------------------------------------------------------------
+3. ASIGNATURA 7 – ANÁLISIS NO SUPERVISADO
+-------------------------------------------------------------------------------
+3.1 Fuente de datos
+  QUÉ: sicop.duckdb, esquema `final`, enero/2025 – septiembre/2026.
+  POR QUÉ: es el dato oficial del grupo hoy (lo genera el pipeline diario de Sergio) y
+  se puede consultar en esta máquina sin servidor. El enunciado pide «idealmente los
+  datos de la Asignatura 5»: son la misma fuente (Observatorio de Compra Pública).
+
+3.2 Unidad de análisis = proveedor
+  QUÉ: una fila por proveedor con 7 variables de comportamiento.
+  POR QUÉ: el caso de uso 2 es «caracterización de proveedores». Segmentar carteles o
+  instituciones respondería a otra pregunta.
+
+3.3 Población: proveedores con ≥ 5 líneas ofertadas ya resueltas (1.990 de 4.379)
+  POR QUÉ: con 1 o 2 ofertas la tasa de éxito es 0 %, 50 % o 100 % por azar; meterlos
+  generaría grupos de ruido. Igual cubren el 96,1 % de las líneas ofertadas. Los 2.389
+  restantes se describen como «ocasionales», no se descartan del análisis.
+
+3.4 Variables y transformaciones (cuenta para el 20 % de preprocesamiento)
+  Volumen, segmentos, instituciones, tasa de éxito, competidores por línea, precio
+  relativo, ticket medio (monto por línea ganada).
+  - Tasa de éxito SOLO sobre líneas resueltas.
+    POR QUÉ: una oferta en una línea que sigue «en evaluación» no está perdida. Contarla
+    como perdida (lo que hace hoy el modelo supervisado) subestima el éxito. Este sesgo se
+    llama censura.
+  - Precio RELATIVO (precio ofertado / mediana de las ofertas de la misma línea).
+    POR QUÉ: un tornillo y un tomógrafo no se comparan en colones; «ofertó 10 % más barato
+    que sus competidores» sí se compara.
+  - Logaritmo en las variables de conteo y monto.
+    POR QUÉ: tienen colas enormes (asimetría 17 en volumen, 15 en ticket). Sin log, unos
+    pocos proveedores gigantes definirían solos los grupos. Después del log la asimetría
+    queda por debajo de 1,1 (tabla en el cuaderno).
+  - Recorte del precio relativo a [0,25; 4].
+    POR QUÉ: hay valores de 10^11 por errores de unidad en el dato original.
+  - StandardScaler (y no MinMaxScaler).
+    POR QUÉ: KMeans usa distancias; sin escalar, el monto (millones) aplasta a la tasa
+    (0 a 1). MinMax se ve afectado por los extremos que quedan tras el log.
+  - Moneda: solo CRC y USD se convierten a colones (ver hallazgo 6.2).
+
+3.5 Algoritmo: KMeans, k = 4
+  POR QUÉ KMeans: da perfiles (centroides) fáciles de explicar al usuario y de mostrar
+  en la app, y asigna un proveedor nuevo sin reentrenar. DBSCAN marca como «ruido» a los
+  proveedores grandes (justo los relevantes); el jerárquico no aportaba nada aquí.
+  POR QUÉ k = 4 y no 3: se probaron k = 2 a 8 con 4 criterios (codo, silueta,
+  Davies-Bouldin y estabilidad entre semillas). k = 3 tiene la silueta más alta (0,274) y
+  k = 4 casi igual (0,260). k = 4 separa el grupo «Nicho con poca competencia», que es la
+  evidencia más útil para el TFM y para la hipótesis 3. k ≥ 5 crea grupitos de < 50
+  proveedores sin interpretación. La decisión está justificada por escrito, como pide
+  el enunciado («justificar el método»).
+
+3.6 Resultados principales
+  - 4 perfiles: Generalistas de alto volumen (450), Competidores focalizados (653),
+    Nicho con poca competencia (502), Sin adjudicaciones (385).
+  - El TAMAÑO de empresa casi no se asocia al perfil (chi² p = 0,08; V de Cramér = 0,05).
+    POR QUÉ importa: es el argumento central del TFM. La MIPYME no pierde por ser pequeña,
+    sino por elegir mal dónde competir, lo que es un problema de información. Se usó el
+    tamaño como VALIDACIÓN EXTERNA (no entró en el clustering) a propósito, para poder
+    hacer esta prueba.
+  - Mapa de oportunidades: 11 segmentos UNSPSC con demanda alta y competencia baja
+    (equipo médico, transporte, laboratorio, ingeniería...). Es evidencia de la hipótesis 3.
+  - Análisis complementarios (sección 7 del cuaderno, figuras 7 a 9):
+    * Fig. 7 Diagrama de silueta por proveedor. POR QUÉ: la silueta media (0,26) no dice si
+      el problema está en un grupo; el diagrama muestra que ninguno es débil (media por
+      grupo 0,21–0,35; como mucho 3,2 % de proveedores con silueta negativa).
+    * Fig. 8 Diagramas de caja por grupo. POR QUÉ: la tabla muestra medianas y oculta la
+      dispersión; las cajas enseñan qué variables separan los grupos (éxito, competidores,
+      volumen) y cuál no (el monto por línea ganada se solapa). En escala log, el grupo
+      «Sin adjudicaciones» no se dibuja: solo 11 de 385 tienen algún monto (simbólico) y
+      una caja con 11 valores engañaría; se escribe el motivo en el gráfico.
+    * Fig. 9 ¿Gana la oferta más barata? Solo en el 56 % de las líneas (27 % la segunda,
+      17 % la tercera o más cara). POR QUÉ: conecta con la Compra Pública Estratégica del
+      marco teórico y justifica que el proveedor necesite información más allá del precio.
+    * Se DESCARTÓ un gráfico de «tasa de éxito según número de competidores»: con un
+      solo ganador por línea, la tasa media es 1/(competidores+1) por construcción
+      (tautología). No aporta información y podía malinterpretarse.
+
+3.7 Reproducibilidad
+  - El cuaderno se genera desde _genera_notebook.py y se ejecuta de punta a punta.
+    POR QUÉ: un .ipynb es un JSON difícil de revisar en git; el .py se lee y se compara.
+  - Se ordenan las filas por cédula antes del KMeans.
+    POR QUÉ: DuckDB ejecuta en paralelo y no garantiza el orden de las filas, y KMeans
+    depende del orden. En una primera versión, dos ejecuciones dieron grupos de tamaños
+    distintos. Se corrigió y se verificó que dos corridas seguidas dan resultados
+    idénticos.
+  - Semilla fija (42) en todo.
+
+3.8 Gráficos
+  POR QUÉ con ese estilo: el CLAUDE.md del proyecto pide usar la skill «dataviz» para
+  que Streamlit, EDA, Tableau y la PPT de defensa sigan un mismo sistema visual. Se usó
+  su paleta validada para daltonismo. La dispersión PCA usa paneles separados (pequeños
+  múltiplos) porque con 4 colores en un mismo gráfico de puntos la paleta deja de
+  garantizar que una persona daltónica distinga los grupos.
+
+
+-------------------------------------------------------------------------------
+4. APLICACIÓN STREAMLIT
+-------------------------------------------------------------------------------
+4.1 Migración PostgreSQL -> DuckDB
+  POR QUÉ: el pipeline del grupo ya no escribe en PostgreSQL; ahora publica sicop.duckdb.
+  Si la app siguiera en PostgreSQL, mostraría datos viejos y nadie del grupo podría
+  ejecutarla sin montar un servidor. Toda la lectura de datos quedó en datos.py: si el
+  grupo vuelve a un servidor, solo cambia ese archivo.
+  Cambios de nombres respecto de la versión vieja: lineas_carteles -> fact_lineas_carteles,
+  nro_linea -> numero_linea, nombre_cartel -> cartel_nm, status_cartel -> cartel_stat,
+  fecha_adjud_firme -> fecha_adjudicacion, dim_catalogo... -> dim_productos.
+
+4.2 Una página por caso de uso
+  POR QUÉ: el primer avance (Tabla 1) define 3 casos de uso. Cada página responde una
+  sola pregunta; esto se apoya en el TAM (Davis, 1989), que ya está en el marco teórico.
+  - UC1 Demanda institucional: es la página que ya existía, ahora en DuckDB y con todos los
+    montos en colones. Indicadores en 2 filas de 3 porque en 6 columnas el monto se
+    cortaba («₡ 2.203.…»).
+  - UC1, sección nueva «Competencia y precios en el segmento» (4 gráficos):
+    * ¿Cuántas ofertas recibe cada línea? (cuánta competencia hay; % de líneas con una
+      sola oferta = donde no compitió nadie).
+    * ¿Gana siempre la oferta más barata? (posición en precio de la ganadora, por segmento).
+    * Precio adjudicado frente al estimado (distribución completa; el KPI solo daba la
+      mediana). Recortado a ±100 % para que errores de unidad no aplasten el gráfico.
+    * ¿Quién se lleva el monto? por tamaño de proveedor (cuánto ganan las MIPYMES en el
+      segmento: es el foco del TFM).
+    POR QUÉ estos: responden directamente al «Reto» de la persona del primer avance
+    («no poder anticipar cuántos competidores tendrán ni cuál es el rango de precio que
+    gana») y a lo que pidió Katia Mora (precios ofertados y adjudicados).
+  - UC2 Caracterización de proveedores: NUEVA. Muestra los 4 perfiles del cuaderno, un
+    buscador para comparar un proveedor con la mediana de su perfil y el mapa de
+    oportunidades. El buscador ahora tiene un GRÁFICO DE PERCENTILES: dónde está el
+    proveedor y dónde la mediana de su perfil, en cada indicador, frente a los 1.990
+    proveedores. POR QUÉ percentiles: ponen en la misma escala variables con unidades
+    distintas (líneas, %, colones) y se leen fácil («gana más que el 80 % de los
+    proveedores»).
+  - UC3 Probabilidad de adjudicación: NUEVA. Lee la tabla predicciones_adjudicacion.
+    POR QUÉ no carga el modelo: el .joblib pesa 768 MB; cargarlo haría la app lenta y no
+    entraría en el plan gratuito de Streamlit Cloud. El pipeline ya escribe las
+    predicciones en la base.
+    POR QUÉ muestra «prioridad relativa» y un aviso: las probabilidades parecen no estar
+    calibradas (hallazgo 6.3). Ordenar las ofertas entre sí es útil; leer «2 %» como dato
+    exacto engañaría al usuario.
+
+4.3 Moneda (regla en datos.py, función a_crc)
+  CRC -> tal cual; USD -> × tipo_cambio_crc; otras -> sin dato.
+  POR QUÉ: ver hallazgo 6.2. Es preferible «sin dato» a un monto mal convertido.
+
+4.4 Pruebas
+  tests\prueba_paginas.py ejecuta las 3 páginas sin navegador (AppTest de Streamlit) y
+  falla si alguna lanza un error. Además se abrieron en Chrome para revisarlas a ojo y
+  sacar las capturas del anexo (carpeta figuras).
+
+
+-------------------------------------------------------------------------------
+5. TEXTOS (docx)
+-------------------------------------------------------------------------------
+Formato del reglamento: Times New Roman 12, títulos 14, interlineado 1,5, márgenes
+3 / 2,5 cm, tablas y figuras numeradas con nota, citas APA 7. Cada docx termina con sus
+referencias para que Alejandra las integre en la bibliografía general.
+
+5.1 Seccion_Asig7_No_Supervisado.docx (9 páginas)
+  Va en la memoria PDF de la Asig. 7, dentro de los apartados «Metodología», «Desarrollo
+  de modelos», «Resultados», «Interpretación» y «Limitaciones».
+  POR QUÉ con referencias académicas (MacQueen, Rousseeuw, Davies-Bouldin, Hubert-Arabie,
+  scikit-learn): el reglamento exige APA, y el enunciado pide justificar el método y las
+  librerías externas (hay una tabla de librerías al final).
+
+5.2 Seccion_TFM_Definicion_App.docx (5 páginas)
+  Va en el documento del TFM (2º avance). Arquitectura en 3 capas, tabla de páginas por
+  caso de uso, capturas, decisiones de diseño y publicación.
+  POR QUÉ tiene párrafos [DECISIÓN DEL GRUPO]: el CLAUDE.md del proyecto marca como
+  «incoherencias abiertas» temas que el grupo debe decidir. No se elige un lado en
+  nombre del grupo: se deja propuesto y señalado.
+
+5.3 Mensaje_para_el_grupo.txt
+  Listo para pegar en el chat. Resume lo hecho, pide las 3 decisiones y reporta los
+  hallazgos de datos a Sergio y David.
+
+POR QUÉ NO se editó el docx principal del TFM: el CLAUDE.md lo prohíbe sin pedido
+explícito, porque lo comparten 5 personas. Las secciones se entregan aparte para que se
+peguen allí.
+
+
+-------------------------------------------------------------------------------
+6. HALLAZGOS DE CALIDAD DE DATOS (afectan a todo el grupo)
+-------------------------------------------------------------------------------
+6.1 Cobertura de ofertas muy baja
+  Solo el 12,3 % de los procedimientos de fact_lineas_carteles tiene alguna oferta en
+  fact_lineas_ofertas. Baja de ~30 % (feb/2025) a 0,3 % (sep/2026).
+  Consecuencia: el modelo supervisado y la segmentación ven solo una parte del mercado.
+  Qué se hizo: el mapa de oportunidades usa solo procedimientos con ofertas registradas;
+  si no, «sin ofertas» mediría la falta de datos y no la falta de competencia. La
+  limitación está escrita en el cuaderno, en el docx y en la app.
+  Para: David / Sergio (¿filtro del ETL o archivos incompletos del Observatorio?).
+
+6.2 tipo_cambio_crc es siempre el tipo de cambio del DÓLAR
+  Vale ~500 también en las filas CRC y EUR. El commit de Sergio del 28/09 multiplica todo
+  lo que no es CRC por ese valor, así que los euros (~900 ofertas, ~300 adjudicaciones)
+  quedan mal convertidos. Además se confirmó que monto_adjudicado_linea = cantidad ×
+  precio en moneda original. Esto cierra el «riesgo de moneda» del CLAUDE.md: el KPI
+  viejo del app SÍ mezclaba colones con dólares.
+
+6.3 Predicciones probablemente no calibradas
+  La mediana de probabilidad_adjudicacion es 2,3 %, pero la tasa real de éxito de los
+  proveedores es 28–33 %. Posibles causas: desbalance de clases o la censura del 3.4
+  (líneas en evaluación contadas como perdidas). No se pudo validar con datos reales,
+  porque las predicciones son solo de líneas aún no resueltas.
+  Para: Sergio (Asig. 7, 70 % de la nota).
+
+6.4 Otros
+  ~14.000 adjudicaciones sin oferta asociada y ~14.300 ofertas sin línea de cartel.
+  El release del 24/09 es anterior al commit de moneda del 28/09: cuando haya release
+  nuevo, se vuelve a correr el cuaderno (es reproducible) y se regeneran los docx.
+
+
+-------------------------------------------------------------------------------
+7. DECISIONES QUE QUEDAN PARA EL GRUPO
+-------------------------------------------------------------------------------
+  a) Documentar PostgreSQL -> DuckDB como decisión de diseño (el primer avance dice
+     PostgreSQL).
+  b) Publicar en Streamlit Community Cloud leyendo el release, en vez de Supabase.
+  c) Justificar «extensión de navegador» (ficha aprobada) -> herramienta web (primer avance).
+  d) Dónde guardar el código de André: ¿carpeta en el repo de Sergio, o repo del grupo?
+     (el .gitignore de Sergio ignora *.ipynb; habría que ajustarlo).
+  e) Quién arma la memoria PDF de la Asig. 7 (propuesta: Alejandra, por el formato).
+
+
+-------------------------------------------------------------------------------
+8. CÓMO EJECUTAR
+-------------------------------------------------------------------------------
+  Abrir una terminal (Git Bash) en D:\mba:
+
+  (Desde ahora usar la copia del repo: /d/mba/SICOP-Python_ETL-PostgreSQL/Entregable2_Andre.
+   Los comandos de abajo valen igual cambiando la ruta.)
+
+  # App
+  cd /d/mba/Andre_Entregable2/app
+  ../../.venv/Scripts/python -m streamlit run app.py
+  -> abre http://localhost:8501
+
+  # Rehacer el cuaderno con datos nuevos (después de bajar un sicop.duckdb nuevo)
+  cd /d/mba/Andre_Entregable2/notebooks
+  ../../.venv/Scripts/python _genera_notebook.py
+  ../../.venv/Scripts/python -m jupyter nbconvert --to notebook --execute --inplace clustering_proveedores.ipynb
+  ../../.venv/Scripts/python -m jupyter nbconvert --to html clustering_proveedores.ipynb
+
+  # Probar las 3 páginas sin navegador
+  cd /d/mba/Andre_Entregable2/app
+  ../../.venv/Scripts/python tests/prueba_paginas.py
+
+  # Regenerar los docx (si cambian los números, editar antes _genera_textos.py)
+  cd /d/mba/Andre_Entregable2/textos && ../../.venv/Scripts/python _genera_textos.py
+
+
+-------------------------------------------------------------------------------
+9. PENDIENTES DE ANDRÉ HASTA EL 18/10
+-------------------------------------------------------------------------------
+  [ ] Leer los dos docx y ajustar el tono a la voz del grupo (es texto para firmar).
+  [ ] Mandar Mensaje_para_el_grupo.txt y cerrar las decisiones de la sección 7.
+  [ ] Cuando Sergio publique un release nuevo: volver a correr el cuaderno y los docx.
+  [ ] Hacer el push de la rama entregable2-andre y abrir el Pull Request (sección 11).
+  [ ] Si se aprueba Streamlit Cloud: agregar a datos.py la descarga del release al iniciar.
+  [ ] Pasar a Alejandra los docx + figuras para la memoria y el TFM.
+
+
+-------------------------------------------------------------------------------
+10. REGISTRO DE CAMBIOS DE CÓDIGO (archivo por archivo)
+-------------------------------------------------------------------------------
+Referencia: la app anterior era un solo archivo, app.py (raíz del repo
+SICOP-Python_ETL-PostgreSQL, 734 líneas, PostgreSQL). Ese archivo NO se modificó: la
+versión nueva vive en Entregable2_Andre/app/ para no romper lo que ya usa el grupo.
+
+app/app.py  (NUEVO)
+  - Punto de entrada con st.navigation: 3 páginas, una por caso de uso.
+    Motivo: la Tabla 1 del primer avance define 3 casos de uso.
+
+app/datos.py  (NUEVO; reemplaza get_engine() y los formatos del app.py viejo)
+  - conexion(): DuckDB en solo lectura, cacheada. Antes: SQLAlchemy + PostgreSQL.
+    Motivo: el pipeline del grupo ahora publica sicop.duckdb.
+  - consultar(): un cursor por consulta. Motivo: DuckDB no comparte cursores entre los
+    hilos de Streamlit.
+  - ruta_duckdb(): secrets -> variable SICOP_DUCKDB -> busca Modelo_predictivo_SICOP en
+    las carpetas superiores. Motivo: que funcione igual en D:\mba\Andre_Entregable2 y
+    dentro del repo, sin tocar código.
+  - a_crc(): conversión a colones solo para CRC y USD. Antes: convertía todo lo que no
+    era CRC con tipo_cambio_crc. Motivo: hallazgo 6.2 (esa columna es el tipo del dólar).
+  - colones_compacto(): «₡ 2,2 mil M». Motivo: en la tarjeta del KPI el monto completo
+    se cortaba («₡ 2.203.…»).
+  - verificar_conexion(): mensaje claro si falta sicop.duckdb.
+
+app/paginas/uc1_demanda.py  (MIGRADO desde app.py)
+  - Todas las consultas reescritas para el esquema final de DuckDB:
+      lineas_carteles      -> final.fact_lineas_carteles  (nro_linea -> numero_linea,
+                              nombre_cartel -> cartel_nm, status_cartel -> cartel_stat)
+      lineas_ofertas       -> final.fact_lineas_ofertas
+      lineas_adjudicadas   -> final.fact_lineas_adjudicadas (fecha_adjud_firme ->
+                              fecha_adjudicacion, moneda_adjudicada -> tipo_moneda)
+      dim_catalogo_codigo_identificacion_producto -> final.dim_productos
+      dim_instituciones.cedula_institucion -> final.dim_instituciones.cedula
+      PERCENTILE_CONT ... WITHIN GROUP -> MEDIAN / QUANTILE_CONT (sintaxis DuckDB)
+      make_interval(months => :meses) -> to_months(?)
+      DISTINCT ON -> QUALIFY ROW_NUMBER()
+  - El bloque repetido «líneas del segmento en la ventana» quedó en una sola constante
+    (LINEAS_SEG). Antes estaba copiado en 7 consultas.
+  - KPI «Monto adjudicado» ahora en colones (antes sumaba colones y dólares).
+  - KPIs en 2 filas de 3 (antes 6 columnas; el monto no cabía).
+  - Etiquetas largas de instituciones y proveedores ya no se cortan (labelLimit).
+  - NUEVO: monto_por_tamano(), ofertas_por_linea(), razones_precio(),
+    posicion_precio_ganador() y la sección «Competencia y precios» con 4 gráficos.
+  - Colores del sistema visual común (paleta validada para daltonismo).
+
+app/paginas/uc2_proveedores.py  (NUEVO)
+  - Lee app/datos/segmentos_proveedores.parquet y mapa_oportunidades.parquet (salida del
+    cuaderno). Tarjetas de los 4 perfiles, composición por tamaño, buscador con gráfico
+    de percentiles + tabla, mapa de oportunidades con tabla desplegable.
+
+app/paginas/uc3_prediccion.py  (NUEVO)
+  - Lee final.predicciones_adjudicacion (no carga el .joblib de 768 MB). Aviso de
+    prototipo, prioridad relativa por percentil, histograma de probabilidades. La lista
+    de proveedores se ordena por nombre (antes el primero cambiaba entre ejecuciones).
+
+app/tests/prueba_paginas.py  (NUEVO)
+  - Ejecuta las 3 páginas con AppTest, simula búsquedas, imprime KPIs y termina con
+    código de error si alguna página falla.
+
+app/requirements.txt, app/.streamlit/secrets.toml.example  (NUEVOS)
+
+notebooks/features.sql  (NUEVO)
+  - Tabla de 1 fila por proveedor. Conversión de moneda, tasa de éxito sobre líneas
+    resueltas, precio relativo por línea.
+
+notebooks/_genera_notebook.py -> clustering_proveedores.ipynb / .html  (NUEVOS)
+  - Secciones 1–9: datos, preprocesamiento, elección de k, perfiles, PCA, validación
+    por tamaño, mapa de oportunidades, análisis complementarios (silueta, cajas, precio
+    ganador), exportación a la app, interpretación.
+  - Cambios hechos durante la revisión:
+    * filas ordenadas por cédula antes del KMeans (reproducibilidad, ver 3.7);
+    * mapa de oportunidades restringido a procedimientos con ofertas (hallazgo 6.1);
+    * conteos corregidos en el texto (140 sin precio relativo, 34 sin institución);
+    * figuras con etiquetas reacomodadas (sin solapes);
+    * gráfico tautológico de «éxito vs. competidores» reemplazado por «posición en
+      precio de la oferta ganadora»;
+    * ruta de sicop.duckdb robusta (variable SICOP_DUCKDB o búsqueda en carpetas
+      superiores).
+
+textos/_genera_textos.py -> 2 docx  (NUEVOS)
+  - Formato del reglamento (Times 12, títulos 14 en negro, interlineado 1,5, márgenes,
+    tablas/figuras numeradas con nota, APA 7). La sección de la Asig. 7 incluye ahora las
+    figuras 7 a 9; la de la app incluye la captura de «Competencia y precios» y la de UC3
+    con un proveedor seleccionado.
+
+
+-------------------------------------------------------------------------------
+11. PASO A PASO PARA SUBIR A GITHUB
+-------------------------------------------------------------------------------
+Repositorio: github.com/ssolorzanocr/SICOP-Python_ETL-PostgreSQL (André tiene acceso de
+escritura). Ya está hecho en esta máquina:
+  - clon en D:\mba\SICOP-Python_ETL-PostgreSQL
+  - rama nueva «entregable2-andre» (no se tocó main)
+  - carpeta nueva Entregable2_Andre/ con todo lo de este documento
+  - commit local con autor «Andre Plannerer <andre.plannerer@gmail.com>»
+  - NO se subió: en esta máquina no hay credenciales de GitHub.
+
+POR QUÉ una rama y no directo en main: main es la rama que usa el grupo; con una rama
+se abre un Pull Request y Sergio/el grupo revisan antes de mezclar. Si algo no les gusta,
+main no se ve afectado.
+
+POR QUÉ NO se suben sicop.duckdb ni el .joblib de Sergio: pesan 247 MB y 768 MB (GitHub
+rechaza archivos de más de 100 MB) y ya están en el release del otro repo.
+
+Opción A — terminal (recomendada; conserva la rama y la carpeta .streamlit)
+  1. Abrir Git Bash.
+  2. cd /d/mba/SICOP-Python_ETL-PostgreSQL
+  3. git status                      -> debe decir «On branch entregable2-andre» y
+                                        «nothing to commit, working tree clean»
+  4. git log --oneline -3            -> el primer commit es el de Entregable2_Andre
+  5. git push -u origin entregable2-andre
+     - La primera vez se abre el navegador para iniciar sesión en GitHub
+       (Git Credential Manager). Entrar con la cuenta AndrePlannerer y autorizar.
+  6. En la salida aparece un enlace «Create a pull request for entregable2-andre».
+     Abrirlo (o ir a la página del repo -> botón «Compare & pull request»).
+  7. Título sugerido: «Entregable 2: segmentación de proveedores (Asig. 7) y app DuckDB
+     con 3 casos de uso». En la descripción pegar el resumen de la sección 0.
+  8. Crear el Pull Request y avisar en el chat (Mensaje_para_el_grupo.txt).
+  9. Cuando el grupo apruebe: botón «Merge pull request» en GitHub.
+
+Opción B — subida por la web (si la terminal falla)
+  1. github.com/ssolorzanocr/SICOP-Python_ETL-PostgreSQL -> selector de ramas -> escribir
+     «entregable2-andre» -> «Create branch: entregable2-andre from main».
+  2. «Add file» -> «Upload files» -> arrastrar la carpeta
+     D:\mba\SICOP-Python_ETL-PostgreSQL\Entregable2_Andre completa.
+  3. Commit en la rama entregable2-andre -> abrir el Pull Request.
+  OJO: la web NO sube carpetas que empiezan con punto. Falta subir a mano
+  app/.streamlit/secrets.toml.example (crear el archivo con «Add file» -> «Create new
+  file» y pegar el contenido). Verificar después que estén las 5 subcarpetas.
+
+Si después de subir se cambia algo:
+  cd /d/mba/SICOP-Python_ETL-PostgreSQL
+  git add Entregable2_Andre
+  git commit -m "Describe el cambio"
+  git push
+  (el Pull Request se actualiza solo)
